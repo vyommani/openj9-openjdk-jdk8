@@ -71,50 +71,22 @@ JNIEXPORT jstring JNICALL
 Java_sun_print_PrintServiceLookupProvider_getDefaultPrinterName(JNIEnv *env,
                                                              jobject peer)
 {
-    TRY;
-
-    TCHAR cBuffer[250];
-    OSVERSIONINFO osv;
-    PRINTER_INFO_2 *ppi2 = NULL;
-    DWORD dwNeeded = 0;
-    DWORD dwReturned = 0;
-    LPTSTR pPrinterName = NULL;
-    jstring jPrinterName;
-
-    // What version of Windows are you running?
-    osv.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&osv);
-
-    // If Windows 2000, XP, Vista
-    if (osv.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-
-       // Retrieve the default string from Win.ini (the registry).
-       // String will be in form "printername,drivername,portname".
-
-       if (GetProfileString(TEXT("windows"), TEXT("device"), TEXT(",,,"),
-                            cBuffer, 250) <= 0) {
-           return NULL;
-       }
-       // Copy printer name into passed-in buffer...
-       int index = 0;
-       int len = lstrlen(cBuffer);
-       while ((index < len) && cBuffer[index] != _T(',')) {
-              index++;
-       }
-       if (index==0) {
-         return NULL;
-       }
-
-       pPrinterName = (LPTSTR)GlobalAlloc(GPTR, (index+1)*sizeof(TCHAR));
-       lstrcpyn(pPrinterName, cBuffer, index+1);
-       jPrinterName = JNU_NewStringPlatform(env, pPrinterName);
-       GlobalFree(pPrinterName);
-       return jPrinterName;
-    } else {
-        return NULL;
-    }
-
-    CATCH_BAD_ALLOC_RET(NULL);
+   TCHAR *cBuffer;
+   jstring jPrinterName;
+   DWORD size = 0;
+   GetDefaultPrinter(NULL, &size); // returns the required buffer size
+   cBuffer = (TCHAR*)malloc(size * sizeof(TCHAR));
+   if( cBuffer == NULL){
+       return NULL;
+   }
+   if(GetDefaultPrinter(cBuffer, &size) != 0){
+       jPrinterName = JNU_NewStringPlatform(env, cBuffer);
+       free(cBuffer);
+       return jPrinterName;      
+   }else {
+       free(cBuffer);
+       return NULL;
+   }
 }
 
 
