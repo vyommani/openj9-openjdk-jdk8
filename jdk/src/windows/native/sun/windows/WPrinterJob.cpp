@@ -75,7 +75,7 @@ Java_sun_print_PrintServiceLookupProvider_getDefaultPrinterName(JNIEnv *env,
    jstring jPrinterName;
    DWORD size = 0;
    GetDefaultPrinter(NULL, &size); // returns the required buffer size
-   cBuffer = (TCHAR*)malloc(size * sizeof(TCHAR));
+   cBuffer = (TCHAR*)SAFE_SIZE_ARRAY_ALLOC(safe_Malloc, size,  sizeof(TCHAR));
    if( cBuffer == NULL){
        return NULL;
    }
