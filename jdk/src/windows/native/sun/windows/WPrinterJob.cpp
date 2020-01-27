@@ -80,6 +80,7 @@ Java_sun_print_PrintServiceLookupProvider_getDefaultPrinterName(JNIEnv *env,
        return NULL;
    }
    if(GetDefaultPrinter(cBuffer, &size) != 0){
+	printf("\nName: %s\n", cBuffer);
        jPrinterName = JNU_NewStringPlatform(env, cBuffer);
        free(cBuffer);
        return jPrinterName;      
